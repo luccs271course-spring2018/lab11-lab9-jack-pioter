@@ -65,29 +65,32 @@ public class MyHashMap<K, V> implements Map<K, V> {
   @Override
   public boolean containsValue(final Object value) {
     // TODO follow basic approach of remove below (though this will be much simpler)
-
-    for(int i = 0; i < table.size(); i++)
-    {
-      for(int p = 0; p < table.get(i).size(); p++)
-      {
-        if(table.get(i).get(p).equals(value))
-        {
-          return true;
+    if (value == null) {
+      throw new NullPointerException();
+    }  else {
+      for (int i = 0; i < table.size(); i++) {
+        for (int p = 0; p < table.get(i).size(); p++) {
+          if (table.get(i).get(p).equals(value)) {
+            return true;
+          }
         }
+
       }
-
+      return false;
     }
-
-
-    return false;
   }
 
   @Override
   public V get(final Object key) {
     // TODO follow basic approach of remove below (though this will be simpler)
     final int index = calculateIndex(key);
-
-
+    final Iterator<Entry<K,V>> iter = table.get(index).iterator();
+    while (iter.hasNext()) {
+      final Entry<K, V> entry = iter.next();
+      if (entry.getKey().equals(key)) {
+        return entry.getValue();
+      }
+    }
     return null;
   }
 
@@ -95,7 +98,16 @@ public class MyHashMap<K, V> implements Map<K, V> {
   public V put(final K key, final V value) {
     // TODO follow basic approach of remove below (this will be similar)
     final int index = calculateIndex(key);
-
+    final Iterator<Entry<K,V>> iter = table.get(index).iterator();
+    while (iter.hasNext()) {
+      final Entry<K,V> entry = iter.next();
+      if (entry.getKey().equals(key)) {
+        final V oldValue = entry.getValue();
+        iter.remove();
+        entry.setValue(value);
+        return oldValue;
+      }
+    }
 
     return null;
   }
