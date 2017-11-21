@@ -65,19 +65,16 @@ public class MyHashMap<K, V> implements Map<K, V> {
   @Override
   public boolean containsValue(final Object value) {
     // TODO follow basic approach of remove below (though this will be much simpler)
-    if (value == null) {
-      throw new NullPointerException();
-    }  else {
-      for (int i = 0; i < table.size(); i++) {
-        for (int p = 0; p < table.get(i).size(); p++) {
-          if (table.get(i).get(p).equals(value)) {
-            return true;
-          }
-        }
+    int count = 0;
+    for(Map.Entry<? extends K,? extends V> add : this.entrySet()) {
+      if(count < this.size()) {
+        if(add.getValue() == value)
 
+        return true;
       }
-      return false;
+      count+= 1;
     }
+    return false;
   }
 
   @Override
@@ -98,23 +95,27 @@ public class MyHashMap<K, V> implements Map<K, V> {
   public V put(final K key, final V value) {
     // TODO follow basic approach of remove below (this will be similar)
     final int index = calculateIndex(key);
-    final Iterator<Entry<K,V>> iter = table.get(index).iterator();
-    while (iter.hasNext()) {
-      final Entry<K,V> entry = iter.next();
-      if (entry.getKey().equals(key)) {
-        if(entry.getValue() != null) {
-        final V oldValue = entry.getValue();
-        entry.setValue(value);
-        return oldValue;
-        }
-        else {
-        entry.setValue(value);
-        return null;
-        }
-      }
+    final Entry<K, V> entry = new AbstractMap.SimpleEntry(key, value);
+    if(table.get(index).size() == 0) {
+      table.get(index).add(entry);
+      return null;
+    }else
+    {
+      Iterator<Entry<K,V>> iter = table.get(index).iterator();
+      V oldValue = iter.next().getValue();
+      iter.remove();
+
+      table.get(index).add(entry);
+
+      System.out.println(table);
+      System.out.println("Here");
+      return oldValue ;
     }
 
-    return null;
+
+
+
+
   }
 
   @Override
@@ -135,9 +136,16 @@ public class MyHashMap<K, V> implements Map<K, V> {
   @Override
   public void putAll(final Map<? extends K, ? extends V> m) {
     // TODO add each entry in m's entrySet
+    int count = 0;
     for(Map.Entry<? extends K,? extends V> add : m.entrySet()) {
-      this.put(add.getKey(), add.getValue());
+      if(count < m.size()) {
+        System.out.println("here");
+        this.put(add.getKey(), add.getValue());
+      }
+      count+= 1;
     }
+    System.out.println(this);
+
 
   }
 
@@ -145,8 +153,13 @@ public class MyHashMap<K, V> implements Map<K, V> {
   public void clear() {
     // TODO clear each chain
     for (int i = 0; i < table.size(); i ++) {
-      this.remove(i);
+      for(int p = 0; p < table.get(i).size(); p++)
+      {
+        table.get(i).remove(p);
+      }
+
     }
+    System.out.println(table);
 
 
 
@@ -200,7 +213,8 @@ public class MyHashMap<K, V> implements Map<K, V> {
     for (int i=0; i <table.size(); i++) {
       final Iterator<Entry<K, V>> iter = table.get(i).iterator();
       while (iter.hasNext()) {
-        System.out.println(iter.next().getKey() + " " + iter.next().getValue());
+        Entry<K,V> entry = iter.next();
+        System.out.println(entry.getKey() + " " + entry.getValue());
       }
     }
     return "";
@@ -211,15 +225,41 @@ public class MyHashMap<K, V> implements Map<K, V> {
       return true;
     } else if (!(that instanceof Map)) {
       return false;
-    } else {
-      if (this.containsKey(that) || this.containsValue(that)) {
-        return true;
-      }
-      else {
-        return false;
-      }
-      // TODO simply compare the entry sets
+
+    } else if (this.containsKey(that) || this.containsValue(that)) {
+      return true;
     }
+      // TODO simply compare the entry sets
+    else
+      {
+        Set<Entry<K,V>> test = this.entrySet();
+        Set<Entry<K,V>> test2 = ((Map) that).entrySet();
+        Iterator<Entry<K,V>> iter1 = test.iterator();
+        Iterator<Entry<K,V>> iter2 = test2.iterator();
+        int count = 0;
+        if(test.size() != test2.size())
+          return false;
+        while(count < test.size())
+        {
+          Entry<K,V> tempEnt = iter1.next();
+          Entry<K,V> tempEnt2 = iter2.next();
+          System.out.println(tempEnt);
+          System.out.println(tempEnt2);
+          if(tempEnt.getValue() != tempEnt2.getValue())
+          {
+            return false;
+          }
+          if(tempEnt.getKey() != tempEnt2.getKey())
+          {
+            return false;
+          }
+          count+=1;
+        }
+        return true;
+
+      }
+
+
   }
 
   private int calculateIndex(final Object key) {
